@@ -52,14 +52,12 @@ public class WsServer extends WebSocketServer {
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
-        // Couldn't care less.
         logger.fatal("Error occurred: {}", ex.getMessage());
         throw new RuntimeException("Failed to startup up due to websocket error!");
     }
 
     @Override
     public void onStart() {
-        // Nothing here either.
         logger.info("Started!");
     }
 
