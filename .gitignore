@@ -1,0 +1,9 @@
+# Ignore Jetbrains IDEA
+/.idea/
+/target/
+
+# Ignore config file
+/config.properties
+
+# Ignore logs
+/logs

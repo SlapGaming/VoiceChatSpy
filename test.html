@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ay</title>
+</head>
+<body>
+
+
+<script>
+    webSocket = new WebSocket('ws://localhost:12121');
+    webSocket.onmessage = function (ev) {
+        console.log(JSON.parse(ev.data));
+    }
+</script>
+
+
+</body>
+</html>
