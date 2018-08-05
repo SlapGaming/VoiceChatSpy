@@ -1,20 +1,19 @@
 package nl.stoux.slap.discord.events;
 
-import net.dv8tion.jda.core.events.Event;
-import net.dv8tion.jda.core.events.channel.voice.GenericVoiceChannelEvent;
+import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.channel.voice.VoiceChannelCreateEvent;
 import net.dv8tion.jda.core.events.channel.voice.VoiceChannelDeleteEvent;
-import net.dv8tion.jda.core.events.channel.voice.update.VoiceChannelUpdateNameEvent;
-import net.dv8tion.jda.core.events.channel.voice.update.VoiceChannelUpdateParentEvent;
-import net.dv8tion.jda.core.events.channel.voice.update.VoiceChannelUpdatePositionEvent;
-import net.dv8tion.jda.core.events.channel.voice.update.VoiceChannelUpdateUserLimitEvent;
-import net.dv8tion.jda.core.events.guild.voice.GenericGuildVoiceEvent;
-import net.dv8tion.jda.core.hooks.EventListener;
+import net.dv8tion.jda.core.events.channel.voice.update.*;
+import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import nl.stoux.slap.App;
 import nl.stoux.slap.discord.DiscordController;
+import nl.stoux.slap.discord.models.DiscordGuild;
+import nl.stoux.slap.discord.models.DiscordVoiceChannel;
+import nl.stoux.slap.events.channels.ChannelUpdateEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class VoiceChannelListener implements EventListener {
+public class VoiceChannelListener extends ListenerAdapter {
 
     private final Logger logger;
     private final DiscordController discord;
@@ -24,40 +23,55 @@ public class VoiceChannelListener implements EventListener {
         this.logger = LogManager.getLogger(getClass().getName());
     }
 
+    // Minor events
+
     @Override
-    public void onEvent(Event event) {
-        if (event instanceof GenericGuildVoiceEvent) {
-            this.handleGuildVoiceEvent((GenericGuildVoiceEvent) event);
-        } else if (event instanceof GenericVoiceChannelEvent) {
-            this.handleVoiceChannelEvent((GenericVoiceChannelEvent) event);
-        }
+    public void onVoiceChannelUpdateName(VoiceChannelUpdateNameEvent event) {
+        updateChannel(event);
     }
 
-    private void handleGuildVoiceEvent(GenericGuildVoiceEvent event) {
-        this.discord.rebuild(); // TODO
-        // TODO: Determine if move/left/join or mute/mic thing
-
+    @Override
+    public void onVoiceChannelUpdateUserLimit(VoiceChannelUpdateUserLimitEvent event) {
+        updateChannel(event);
     }
 
-    private void handleVoiceChannelEvent(GenericVoiceChannelEvent event) {
-        if (isMajorChannelChange(event)) {
-            this.discord.rebuild();
-        } else if (event instanceof VoiceChannelUpdateNameEvent) {
-            // Update the name of the channel
-            // TODO: For now just rebuild
-            this.discord.rebuild();
-        } else if (event instanceof VoiceChannelUpdateUserLimitEvent) {
-            // Update the user limit of the channel
-            // TODO: For now just rebuild
-            this.discord.rebuild();
-        }
+    private void updateChannel(GenericVoiceChannelUpdateEvent updateEvent) {
+        DiscordGuild guild = discord.getGuild(updateEvent.getGuild().getIdLong());
+        VoiceChannel channel = updateEvent.getChannel();
+        DiscordVoiceChannel voiceChannel = guild.getVoiceChannel(channel.getIdLong());
+
+        voiceChannel.setName(voiceChannel.getName());
+        voiceChannel.setUserLimit((long) channel.getUserLimit());
+
+        logger.info("Updating channel {} ({}) in guild {}",
+                voiceChannel.getName(), voiceChannel.getId(), guild.getName());
+
+        App.post(new ChannelUpdateEvent(guild, voiceChannel));
     }
 
-    private boolean isMajorChannelChange(GenericVoiceChannelEvent event) {
-        return event instanceof VoiceChannelCreateEvent ||
-                event instanceof VoiceChannelDeleteEvent ||
-                event instanceof VoiceChannelUpdatePositionEvent ||
-                event instanceof VoiceChannelUpdateParentEvent;
+    // Major events
+
+    @Override
+    public void onVoiceChannelDelete(VoiceChannelDeleteEvent event) {
+        logger.info("Channel deleted! Rebuilding..");
+        this.discord.rebuildGuild(event.getGuild().getIdLong());
     }
 
+    @Override
+    public void onVoiceChannelUpdatePosition(VoiceChannelUpdatePositionEvent event) {
+        logger.info("Channel position updated! Rebuilding..");
+        this.discord.rebuildGuild(event.getGuild().getIdLong());
+    }
+
+    @Override
+    public void onVoiceChannelUpdateParent(VoiceChannelUpdateParentEvent event) {
+        logger.info("Channel's parent updated! Rebuilding..");
+        this.discord.rebuildGuild(event.getGuild().getIdLong());
+    }
+
+    @Override
+    public void onVoiceChannelCreate(VoiceChannelCreateEvent event) {
+        logger.info("Channel created! Rebuilding..");
+        this.discord.rebuildGuild(event.getGuild().getIdLong());
+    }
 }

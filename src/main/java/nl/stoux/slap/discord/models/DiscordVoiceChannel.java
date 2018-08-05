@@ -42,6 +42,10 @@ public class DiscordVoiceChannel extends DiscordId implements Channel {
         this.members.add(member);
     }
 
+    public void removeMember(DiscordVoiceMember member) {
+        this.members.remove(member);
+    }
+
     public DiscordVoiceMember getMember(long id) {
         return members.getItem(id);
     }

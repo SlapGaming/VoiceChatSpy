@@ -5,13 +5,13 @@ import nl.stoux.slap.models.Member;
 import nl.stoux.slap.models.Server;
 
 @Getter
-public abstract class BaseIdentifiableEvent extends BaseEvent {
+public abstract class BaseMemberEvent extends BaseEvent {
 
     private String server;
     private String identifier;
 
-    public BaseIdentifiableEvent(String type, Server server, Member member) {
-        super(type);
+    public BaseMemberEvent(String type, Server server, Member member) {
+        super("MEMBER_" + type);
         this.server = server.getIdentifier();
         this.identifier = member.getIdentifier();
     }

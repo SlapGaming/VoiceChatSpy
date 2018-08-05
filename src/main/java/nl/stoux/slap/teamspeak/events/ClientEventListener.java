@@ -31,7 +31,7 @@ public class ClientEventListener extends TS3EventAdapter {
         TeamspeakUser user = connectedServer.onUserJoin(e.getUniqueClientIdentifier());
         logger.info("Client joined: {} ({})", user.getNickname(), user.getId());
         App.post(new MemberJoinEvent(
-                getServer(), user
+                getServer(), user, user.getChannel()
         ));
     }
 
