@@ -70,4 +70,11 @@ public class TeamspeakController {
         }
     }
 
+    /**
+     * Disconnect from all servers.
+     */
+    public void disconnect() {
+        servers.forEach(ConnectedServer::disconnect);
+    }
+
 }

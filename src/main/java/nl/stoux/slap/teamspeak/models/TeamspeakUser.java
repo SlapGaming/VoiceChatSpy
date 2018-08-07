@@ -1,7 +1,6 @@
 package nl.stoux.slap.teamspeak.models;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import nl.stoux.slap.models.Member;
@@ -20,24 +19,21 @@ public class TeamspeakUser implements Member {
     @Setter(AccessLevel.NONE)
     private TeamspeakChannel channel;
 
-    public TeamspeakUser(int id, String nickname, boolean muted, boolean deafened, boolean microphoneDisabled) {
+    private int[] serverGroups;
+
+    public TeamspeakUser(int id, String nickname, boolean muted, boolean deafened, boolean microphoneDisabled, String groupPrefix, int[] serverGroups) {
         this.id = id;
         this.nickname = nickname;
+        this.group = groupPrefix;
         this.muted = muted;
         this.deafened = deafened;
         this.microphoneDisabled = microphoneDisabled;
-        this.group = null;
+        this.serverGroups = serverGroups;
     }
 
     @Override
     public String getName() {
-        StringBuilder builder = new StringBuilder();
-        if (this.group != null) {
-            builder.append("[")
-                    .append(this.group)
-                    .append("] ");
-        }
-        return builder.append(this.nickname).toString();
+        return group == null ? nickname : group + " " + nickname;
     }
 
     @Override

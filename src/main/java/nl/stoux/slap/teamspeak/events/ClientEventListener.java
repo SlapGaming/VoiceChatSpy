@@ -69,5 +69,4 @@ public class ClientEventListener extends TS3EventAdapter {
         return connectedServer.getServer();
     }
 
-
 }

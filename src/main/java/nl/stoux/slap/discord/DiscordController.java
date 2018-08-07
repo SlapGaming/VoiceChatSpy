@@ -33,8 +33,8 @@ public class DiscordController {
         this.jda = new JDABuilder(AccountType.BOT)
                 .setToken(config.getDiscordToken())
                 .setAudioEnabled(false)
-                .setGame(Game.playing("Loading..."))
-                .setStatus(OnlineStatus.IDLE)
+                .setGame(Game.watching("you"))
+                .setStatus(OnlineStatus.ONLINE)
                 .addEventListener(new GuildVoiceListener(this))
                 .addEventListener(new VoiceChannelListener(this))
                 .buildBlocking();
@@ -96,6 +96,13 @@ public class DiscordController {
                 = new DiscordVoiceMember(member.getUser().getIdLong(), member.getEffectiveName(), member.getVoiceState());
         addToChannel.addMember(discordVoiceMember);
         return discordVoiceMember;
+    }
+
+    /**
+     * Disconnect the bot from Discord.
+     */
+    public void disconnect() {
+        this.jda.shutdown();
     }
 
 }

@@ -7,32 +7,45 @@ import com.github.theholywaffle.teamspeak3.api.wrapper.*;
 import lombok.Getter;
 import nl.stoux.slap.App;
 import nl.stoux.slap.events.ServerUpdateEvent;
-import nl.stoux.slap.events.users.MemberJoinEvent;
 import nl.stoux.slap.teamspeak.events.ClientEventListener;
+import nl.stoux.slap.teamspeak.events.UserUpdateTask;
 import nl.stoux.slap.teamspeak.models.TeamspeakChannel;
 import nl.stoux.slap.teamspeak.models.TeamspeakUser;
 import nl.stoux.slap.teamspeak.models.TeamspeakVirtualServer;
+import org.apache.logging.log4j.util.Strings;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ConnectedServer {
 
+    private static final int REFRESH_INTERVAL = 15 * 1000; // Millis
+
+    @Getter
     private TS3Query ts3Query;
     @Getter
     private TeamspeakVirtualServer server;
     private Map<Integer, TeamspeakChannel> channelMap;
     private Map<Integer, TeamspeakUser> userMap;
+    private Map<Integer, ServerGroup> groupMap;
+
+    private Timer userRefreshTimer;
+    private UserUpdateTask updateTask;
 
     public ConnectedServer(TS3Query ts3Query, TeamspeakVirtualServer server) {
         this.ts3Query = ts3Query;
         this.server = server;
         this.channelMap = new HashMap<>();
         this.userMap = new HashMap<>();
+        this.groupMap = new HashMap<>();
+
+        this.updateTask = new UserUpdateTask(this);
+        this.userRefreshTimer = new Timer();
+        this.userRefreshTimer.scheduleAtFixedRate(updateTask, REFRESH_INTERVAL, REFRESH_INTERVAL);
     }
 
     public void rebuild() {
+        updateTask.setDisabled(true);
         TS3Api api = ts3Query.getApi();
         VirtualServerInfo serverInfo = api.getServerInfo();
 
@@ -42,7 +55,7 @@ public class ConnectedServer {
         // Go through all channels twice, first index all channels
         List<Channel> availableChannels = api.getChannels();
         Iterator<Channel> iterator = availableChannels.iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             Channel availableChannel = iterator.next();
             TeamspeakChannel teamspeakChannel = new TeamspeakChannel(availableChannel.getId(), availableChannel.getName(),
                     availableChannel.getOrder(), (long) availableChannel.getMaxClients());
@@ -60,6 +73,9 @@ public class ConnectedServer {
             teamspeakChannel.moveToParent(parentTeamspeakChannel);
         }
 
+        // Get the server groups
+        this.refreshServerGroups();
+
         // Get users
         userMap = new HashMap<>();
         List<Client> clients = api.getClients();
@@ -69,17 +85,22 @@ public class ConnectedServer {
             }
 
             addTeamspeakUser(client);
-
-            // TODO: User groups
         }
 
         App.getInstance().getEventBus().post(new ServerUpdateEvent(this.server));
+        this.updateTask.setDisabled(false);
+    }
+
+    public void refreshServerGroups() {
+        groupMap = ts3Query.getApi().getServerGroups().stream().collect(Collectors.toMap(ServerGroup::getId, s -> s));
     }
 
     private TeamspeakUser addTeamspeakUser(Client client) {
+        int[] serverGroups = client.getServerGroups();
         TeamspeakUser user = new TeamspeakUser(
                 client.getId(), client.getNickname(),
-                client.isInputMuted(), client.isOutputMuted(), !client.isInputHardware()
+                client.isInputMuted(), client.isOutputMuted(), !client.isInputHardware(),
+                buildGroupPrefix(serverGroups), serverGroups
         );
 
         TeamspeakChannel channel = channelMap.get(client.getChannelId());
@@ -88,6 +109,17 @@ public class ConnectedServer {
 
         return user;
     }
+
+    public String buildGroupPrefix(int[] groups) {
+        String groupPrefix = Arrays.stream(groups).mapToObj(groupMap::get)
+                .filter(group -> group.getNameMode() == 1)
+                .map(g -> "[" + g.getName() + "]")
+                .collect(Collectors.joining(""));
+
+        return Strings.isBlank(groupPrefix) ? null : groupPrefix;
+    }
+
+
 
     public static ConnectedServer init(TS3Query query, VirtualServer virtualServer) {
         TS3Api api = query.getApi();
@@ -117,6 +149,15 @@ public class ConnectedServer {
     public TeamspeakUser onUserJoin(String uniqueIdentifier) {
         ClientInfo client = ts3Query.getApi().getClientByUId(uniqueIdentifier);
         return this.addTeamspeakUser(client);
+    }
+
+    /**
+     * Disconnect this server from all APIs and tasks.
+     */
+    public void disconnect() {
+        this.updateTask.setDisabled(true);
+        this.userRefreshTimer.cancel();
+        this.ts3Query.exit();
     }
 
 }

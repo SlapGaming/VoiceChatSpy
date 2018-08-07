@@ -44,14 +44,19 @@ public class App {
             websocket = new WsServer(config.getWebsocketPort(), gson);
             websocket.start();
 
+            // Wait for the websocket to bind
+            while(!websocket.STARTED.get() && !websocket.ERROR.get()) {
+                // Not allowed to call wait()?
+            }
+            if (websocket.ERROR.get()) {
+                websocket.stop();
+                logger.fatal("Shutting down due to websocket error.");
+                throw new RuntimeException("RIP");
+            }
+
+
             discord = new DiscordController(config);
             teamspeak = new TeamspeakController(config);
-
-
-            // TODO: Load the config
-            // TODO: Connect to Discord
-            // TODO: Connect to Teamspeak
-            // TODO: Open websocket for incoming requests
         } catch (Exception e) {
             logger.fatal("Error during startup", e);
             throw new RuntimeException("RIP");
@@ -78,5 +83,20 @@ public class App {
                 .setPrettyPrinting()
                 .serializeNulls()
                 .create();
+    }
+
+    public void disable() {
+        try {
+            logger.info("Shutting down websocket...");
+            this.websocket.stop();
+        } catch (Exception e) {
+            logger.warn("Error shutting down Websocket.");
+        }
+
+        logger.info("Disconnecting all TS3 servers...");
+        this.teamspeak.disconnect();
+
+        logger.info("Disconnecting from Discord");
+        this.discord.disconnect();
     }
 }

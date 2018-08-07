@@ -7,6 +7,7 @@ import nl.stoux.slap.discord.models.helpers.DiscordListContainer;
 import nl.stoux.slap.models.Channel;
 import nl.stoux.slap.models.Member;
 
+import java.util.Collections;
 import java.util.List;
 
 public class DiscordVoiceChannel extends DiscordId implements Channel {
@@ -35,7 +36,7 @@ public class DiscordVoiceChannel extends DiscordId implements Channel {
 
     @Override
     public List<? extends Channel> getChildChannels() {
-        return null;
+        return Collections.emptyList();
     }
 
     public void addMember(DiscordVoiceMember member) {

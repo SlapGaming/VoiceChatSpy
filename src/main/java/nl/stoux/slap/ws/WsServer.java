@@ -14,8 +14,12 @@ import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WsServer extends WebSocketServer {
+
+    public final AtomicBoolean STARTED = new AtomicBoolean(false);
+    public final AtomicBoolean ERROR = new AtomicBoolean(false);
 
     private final Logger logger = LogManager.getLogger(getClass().getName());
     private ConcurrentHashMap<String, Server> servers;
@@ -52,13 +56,14 @@ public class WsServer extends WebSocketServer {
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
-        logger.fatal("Error occurred: {}", ex.getMessage());
-        throw new RuntimeException("Failed to startup up due to websocket error!");
+        logger.fatal("Error occurred while binding to websocket: {}", ex.getMessage());
+        this.ERROR.set(true);
     }
 
     @Override
     public void onStart() {
-        logger.info("Started!");
+        logger.info("Websocket successfully bound!");
+        this.STARTED.set(true);
     }
 
     private static String getRemote(ClientHandshake ch) {
