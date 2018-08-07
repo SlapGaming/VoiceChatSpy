@@ -1,5 +1,7 @@
 package nl.stoux.slap.discord;
 
+import com.jagrosh.jdautilities.command.CommandClient;
+import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -10,6 +12,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import nl.stoux.slap.App;
 import nl.stoux.slap.config.Config;
+import nl.stoux.slap.discord.commands.ShutdownCommand;
 import nl.stoux.slap.discord.events.GuildVoiceListener;
 import nl.stoux.slap.discord.events.VoiceChannelListener;
 import nl.stoux.slap.discord.models.DiscordGuild;
@@ -30,11 +33,18 @@ public class DiscordController {
     public DiscordController(Config config) throws Exception {
         logger.info("Connecting to Discord...");
 
+        CommandClient commandClient = new CommandClientBuilder()
+                .useHelpBuilder(false)
+                .setOwnerId(config.getDiscordOwner())
+                .addCommand(new ShutdownCommand())
+                .build();
+
         this.jda = new JDABuilder(AccountType.BOT)
                 .setToken(config.getDiscordToken())
                 .setAudioEnabled(false)
                 .setGame(Game.watching("you"))
                 .setStatus(OnlineStatus.ONLINE)
+                .addEventListener(commandClient)
                 .addEventListener(new GuildVoiceListener(this))
                 .addEventListener(new VoiceChannelListener(this))
                 .buildBlocking();

@@ -32,7 +32,7 @@ public class App {
     private final DiscordController discord;
     private final TeamspeakController teamspeak;
     private final WsServer websocket;
-
+    
     public App() {
         logger.info("Starting...");
         instance = this;
@@ -45,7 +45,7 @@ public class App {
             websocket.start();
 
             // Wait for the websocket to bind
-            while(!websocket.STARTED.get() && !websocket.ERROR.get()) {
+            while (!websocket.STARTED.get() && !websocket.ERROR.get()) {
                 // Not allowed to call wait()?
             }
             if (websocket.ERROR.get()) {
@@ -69,6 +69,7 @@ public class App {
 
     /**
      * Post an event to the EventBus.
+     *
      * @param event The event
      */
     public static void post(BaseEvent event) {
