@@ -23,7 +23,7 @@ public class DiscordGuild extends DiscordId implements Server {
 
     @Override
     public String getType() {
-        return "DISCORD";
+        return "DC";
     }
 
     @Override

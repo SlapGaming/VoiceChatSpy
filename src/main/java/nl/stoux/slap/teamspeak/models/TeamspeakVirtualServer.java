@@ -29,7 +29,7 @@ public class TeamspeakVirtualServer extends TeamspeakChannelParent implements Se
 
     @Override
     public String getType() {
-        return "TEAMSPEAK";
+        return "TS";
     }
 
     @Override

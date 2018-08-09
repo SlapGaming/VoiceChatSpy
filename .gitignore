@@ -1,6 +1,7 @@
 # Ignore Jetbrains IDEA
 /.idea/
 /target/
+/out/
 
 # Ignore config file
 /config.properties

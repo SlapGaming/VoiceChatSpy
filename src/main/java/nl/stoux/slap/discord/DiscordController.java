@@ -14,6 +14,7 @@ import nl.stoux.slap.App;
 import nl.stoux.slap.config.Config;
 import nl.stoux.slap.discord.commands.ShutdownCommand;
 import nl.stoux.slap.discord.events.GuildVoiceListener;
+import nl.stoux.slap.discord.events.NsaListener;
 import nl.stoux.slap.discord.events.VoiceChannelListener;
 import nl.stoux.slap.discord.models.DiscordGuild;
 import nl.stoux.slap.discord.models.DiscordVoiceChannel;
@@ -35,6 +36,8 @@ public class DiscordController {
 
         CommandClient commandClient = new CommandClientBuilder()
                 .useHelpBuilder(false)
+                .setGame(Game.watching("you"))
+                .setStatus(OnlineStatus.ONLINE)
                 .setOwnerId(config.getDiscordOwner())
                 .addCommand(new ShutdownCommand())
                 .build();
@@ -42,12 +45,12 @@ public class DiscordController {
         this.jda = new JDABuilder(AccountType.BOT)
                 .setToken(config.getDiscordToken())
                 .setAudioEnabled(false)
-                .setGame(Game.watching("you"))
-                .setStatus(OnlineStatus.ONLINE)
                 .addEventListener(commandClient)
                 .addEventListener(new GuildVoiceListener(this))
                 .addEventListener(new VoiceChannelListener(this))
                 .buildBlocking();
+
+        new NsaListener(jda, config);
 
         build();
     }
