@@ -42,15 +42,21 @@ public class DiscordController {
                 .addCommand(new ShutdownCommand())
                 .build();
 
+        logger.info("Command client build...");
+
         this.jda = new JDABuilder(AccountType.BOT)
                 .setToken(config.getDiscordToken())
                 .setAudioEnabled(false)
                 .addEventListener(commandClient)
                 .addEventListener(new GuildVoiceListener(this))
                 .addEventListener(new VoiceChannelListener(this))
-                .buildBlocking();
+                .build().awaitReady();
+
+        logger.info("JDA build...");
 
         new NsaListener(jda, config);
+
+        logger.info("NSA Listener initialized...");
 
         build();
     }
@@ -61,7 +67,9 @@ public class DiscordController {
     public void build() {
         guilds = new DiscordListContainer<>();
 
+        logger.info("Fetching builds...");
         for (Guild guild : jda.getGuilds()) {
+            logger.info("Handling guild: {}", guild.getName());
             DiscordGuild discordGuild = new DiscordGuild(guild.getIdLong(), guild.getName());
             guilds.add(discordGuild);
             fillGuild(guild, discordGuild);
