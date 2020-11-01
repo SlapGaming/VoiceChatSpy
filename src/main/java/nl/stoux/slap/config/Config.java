@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -19,6 +20,7 @@ public class Config {
 
     private static final String DISCORD_TOKEN_FIELD = "discord_token";
     private static final String DISCORD_OWNER_FIELD = "discord_owner";
+    private static final String DISCORD_NSA_CHANNEL_FIELD = "discord_nsa_channel";
 
     private static final String TS_SERVER_FIELD = "ts_server";
     private static final String TS_PORT_FIELD = "ts_port";
@@ -63,6 +65,10 @@ public class Config {
 
     public String getDiscordOwner() {
         return this.properties.getProperty(DISCORD_OWNER_FIELD);
+    }
+
+    public Optional<String> getDiscordNsaChannel() {
+        return Optional.of(this.properties.getProperty(DISCORD_NSA_CHANNEL_FIELD));
     }
 
     public String getTeamspeakServer() {
