@@ -2,7 +2,7 @@ package nl.stoux.slap.discord.models;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.dv8tion.jda.core.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
 import nl.stoux.slap.discord.models.helpers.DiscordId;
 import nl.stoux.slap.models.Member;
 

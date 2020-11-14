@@ -1,15 +1,12 @@
 package nl.stoux.slap.discord.events;
 
-import net.dv8tion.jda.core.events.Event;
-import net.dv8tion.jda.core.events.StatusChangeEvent;
-import net.dv8tion.jda.core.hooks.EventListener;
+import net.dv8tion.jda.api.events.StatusChangeEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
-public class StatusChangeListener implements EventListener {
+public class StatusChangeListener extends ListenerAdapter {
 
     @Override
-    public void onEvent(Event event) {
-        if (event instanceof StatusChangeEvent) {
+    public void onStatusChange(StatusChangeEvent event){
 
-        }
     }
 }
