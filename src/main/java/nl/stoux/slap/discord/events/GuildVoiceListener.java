@@ -86,6 +86,12 @@ public class GuildVoiceListener extends ListenerAdapter {
         GuildVoiceState voiceState = eventMember.getVoiceState();
 
         DiscordGuild guild = discord.getGuild(event.getGuild().getIdLong());
+        if (voiceState == null || voiceState.getChannel() == null) {
+            logger.debug("Voice state for user {} ignored due to no channel being set", eventMember.getEffectiveName());
+            return;
+        }
+
+
         DiscordVoiceChannel channel = getChannel(guild, voiceState.getChannel());
         DiscordVoiceMember member = getMember(event, channel);
 
