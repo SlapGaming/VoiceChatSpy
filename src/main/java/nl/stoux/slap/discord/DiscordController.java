@@ -2,14 +2,14 @@ package nl.stoux.slap.discord;
 
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
-import net.dv8tion.jda.core.AccountType;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.OnlineStatus;
-import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.VoiceChannel;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import nl.stoux.slap.App;
 import nl.stoux.slap.config.Config;
 import nl.stoux.slap.discord.commands.ShutdownCommand;
@@ -24,7 +24,11 @@ import nl.stoux.slap.events.ServerUpdateEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class DiscordController {
+    private static final List<GatewayIntent> GATEWAY_INTENTS = Arrays.asList(GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_PRESENCES);
 
     private final Logger logger = LogManager.getLogger();
     private final JDA jda;
@@ -36,7 +40,7 @@ public class DiscordController {
 
         CommandClient commandClient = new CommandClientBuilder()
                 .useHelpBuilder(false)
-                .setGame(Game.watching("you"))
+                .setActivity(Activity.watching("you"))
                 .setStatus(OnlineStatus.ONLINE)
                 .setOwnerId(config.getDiscordOwner())
                 .addCommand(new ShutdownCommand())
@@ -44,12 +48,10 @@ public class DiscordController {
 
         logger.info("Command client build...");
 
-        this.jda = new JDABuilder(AccountType.BOT)
-                .setToken(config.getDiscordToken())
-                .setAudioEnabled(false)
-                .addEventListener(commandClient)
-                .addEventListener(new GuildVoiceListener(this))
-                .addEventListener(new VoiceChannelListener(this))
+        this.jda = JDABuilder.create(config.getDiscordToken(), GATEWAY_INTENTS)
+                .addEventListeners(commandClient)
+                .addEventListeners(new GuildVoiceListener(this))
+                .addEventListeners(new VoiceChannelListener(this))
                 .build().awaitReady();
 
         logger.info("JDA build...");

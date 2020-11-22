@@ -1,10 +1,10 @@
 package nl.stoux.slap.discord.events;
 
-import net.dv8tion.jda.core.entities.VoiceChannel;
-import net.dv8tion.jda.core.events.channel.voice.VoiceChannelCreateEvent;
-import net.dv8tion.jda.core.events.channel.voice.VoiceChannelDeleteEvent;
-import net.dv8tion.jda.core.events.channel.voice.update.*;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.events.channel.voice.VoiceChannelCreateEvent;
+import net.dv8tion.jda.api.events.channel.voice.VoiceChannelDeleteEvent;
+import net.dv8tion.jda.api.events.channel.voice.update.*;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import nl.stoux.slap.App;
 import nl.stoux.slap.discord.DiscordController;
 import nl.stoux.slap.discord.models.DiscordGuild;

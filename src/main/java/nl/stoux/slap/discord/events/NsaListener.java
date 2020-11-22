@@ -1,8 +1,8 @@
 package nl.stoux.slap.discord.events;
 
 import com.google.common.eventbus.Subscribe;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.TextChannel;
 import nl.stoux.slap.App;
 import nl.stoux.slap.config.Config;
 import nl.stoux.slap.events.users.MemberJoinEvent;
